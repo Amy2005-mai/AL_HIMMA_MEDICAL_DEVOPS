@@ -72,6 +72,7 @@ Product::create([
     'stock' => 200,
     'category_id' => 2
 ]);
-    }
 
+
+}
 }
