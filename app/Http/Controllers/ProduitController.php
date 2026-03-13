@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Produit;
+use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class ProduitController extends Controller
@@ -10,59 +11,68 @@ class ProduitController extends Controller
     //
     public function index()
     {
-        return view('add-produit');
+        $categories = Category::all();
+        return view('add-produit', compact('categories'));
     }
 
-    public function store(Request $request){ // c'est saveProduit : insertion
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nom' => 'required|string|max:255',
+            'prix' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'description' => 'required|string',
+            'classification' => 'required|exists:categories,id',
+        ]);
 
-                $produit = new Produit();
-                $produit -> nom= $request-> input(key: 'nom');
-                $produit -> prix = $request-> input(key: 'prix');
-                $produit -> stock = $request-> input(key: 'stock');
-                $produit -> description = $request-> input(key: 'description');
-                $produit -> classification = $request-> input(key: 'classification');
-                $produit -> save();
+        Product::create([
+            'nom' => $request->input('nom'),
+            'prix' => $request->input('prix'),
+            'stock' => $request->input('stock'),
+            'description' => $request->input('description'),
+            'category_id' => $request->input('classification'),
+        ]);
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Produit ajouté avec succès !');
     }
 
 
-    public function edit($id) { //affiche mais pour editer car met les valeurs de la bdd
-        $produit= Produit::find($id) ;
-        $ligne = Produit::select('classification')->distinct()->get();
+    public function edit($id)
+    { //affiche mais pour editer car met les valeurs de la bdd
+        $produit = Product::findOrFail($id);
+        $categories = Category::all();
 
-        return view('form-edit-produit', compact('ligne','produit'));
-       // $ligne= classification::all(); necessite une table Classification et donc un Modele
-        //$ligne = Classification::orderBy('classification')->get(); //plus propre! necessite une table Classification
-
+        return view('form-edit-produit', compact('categories', 'produit'));
     }
 
     public function update(Request $request, $id)
-    {            //$request->validate([
-                //    'nom' => 'required',
-                //    'prix' => 'required|numeric',
-                //    'stock' => 'required|integer'
-                //]);
+    {
+        $request->validate([
+            'nom' => 'required|string|max:255',
+            'prix' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'description' => 'required|string',
+            'classification' => 'required|exists:categories,id',
+        ]);
 
-            $produit = Produit::findOrFail($id);
-            $produit -> update([
-                'nom' => $request -> input(key: 'nom'),
-                'prix' => $request -> prix,
-                'stock' => $request -> stock,
-                'description' => $request -> description,
-                'classification' => $request -> classification
-            ]);
-            return redirect()->back();
+        $produit = Product::findOrFail($id);
+        $produit->update([
+            'nom' => $request->input('nom'),
+            'prix' => $request->input('prix'),
+            'stock' => $request->input('stock'),
+            'description' => $request->input('description'),
+            'category_id' => $request->input('classification')
+        ]);
+
+        return redirect()->back()->with('success', 'Produit mis à jour avec succès !');
+    }
 
     //  $employer = Employer::findOrFail($id); ces 3 necessite de definir $filiable car entre donne massive!
     //  $employer->update($request->all());
-    //  return redirect()->back();
-
-    }
     public function lecture()
     {
-        // Lire tous les produits
-        $produits = Produit::all();
+        // Lire tous les produits avec leur catégorie
+        $produits = Product::with('category')->get();
 
         // Envoyer à la vue
         return view('produits', compact('produits'));
