@@ -15,11 +15,30 @@ class ProduitDemoSeeder extends Seeder
      */
     public function run()
     {
-        $c1 = Category::where('nom', 'like', '%Diagnostic%')->firstOrFail()->id;
-        $c2 = Category::where('nom', 'like', '%Consommables%')->firstOrFail()->id;
-        $c3 = Category::where('nom', 'like', '%Mobilite%')->firstOrFail()->id;
-        $c4 = Category::where('nom', 'like', '%Urgences%')->firstOrFail()->id;
-        $c5 = Category::where('nom', 'like', '%Mobilier%')->firstOrFail()->id;
+        $c1 = Category::firstOrCreate(
+            ['nom' => 'Appareils de Diagnostic'],
+            ['description' => 'Stethoscopes, Tensiometres']
+        )->id;
+
+        $c2 = Category::firstOrCreate(
+            ['nom' => 'Consommables Medicaux'],
+            ['description' => 'Seringues, Gants']
+        )->id;
+
+        $c3 = Category::firstOrCreate(
+            ['nom' => 'Mobilite & Maintien a domicile'],
+            ['description' => 'Fauteuils roulants']
+        )->id;
+
+        $c4 = Category::firstOrCreate(
+            ['nom' => 'Urgences & Secours'],
+            ['description' => 'Defibrillateurs']
+        )->id;
+
+        $c5 = Category::firstOrCreate(
+            ['nom' => 'Mobilier Medical'],
+            ['description' => 'Tables d examen']
+        )->id;
 
         $produits = [
             // 1: Appareils de Diagnostic
