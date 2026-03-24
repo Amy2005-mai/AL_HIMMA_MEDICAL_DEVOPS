@@ -36,8 +36,8 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Prix (€)</label>
-                <input type="number" name="prix" id="prix" value="{{ old('prix') }}" min="0" required class="form-input" placeholder="Prix en €">
+                <label class="form-label">Prix (FCFA)</label>
+                <input type="number" name="prix" id="prix" value="{{ old('prix') }}" min="0" required class="form-input" placeholder="Montant en FCFA">
                 @error('prix') <span style="color: #ffbaba; font-size: 0.8rem;">{{ $message }}</span> @enderror
             </div>
 
@@ -53,7 +53,7 @@
                     <option value="" selected disabled hidden>Choisir une catégorie</option>
                     @foreach($categories as $category)
                         <option value="{{ $category->id }}" {{ old('classification') == $category->id ? 'selected' : '' }}>
-                            {{ $category->name }}
+                            {{ $category->nom }}
                         </option>
                     @endforeach
                 </select>

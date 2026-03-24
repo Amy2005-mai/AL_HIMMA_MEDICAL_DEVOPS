@@ -15,6 +15,12 @@ class ProduitController extends Controller
         return view('add-produit', compact('categories'));
     }
 
+    public function adminIndex()
+    {
+        $produits = Product::with('category')->get();
+        return view('admin', compact('produits'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -78,4 +84,22 @@ class ProduitController extends Controller
         return view('produits', compact('produits'));
     }
 
+    public function recherche(Request $request)
+    {
+        $motcle = $request->input('motcle');
+        $produits = Product::with('category')
+            ->where('nom', 'LIKE', "%{$motcle}%")
+            ->orWhere('description', 'LIKE', "%{$motcle}%")
+            ->get();
+
+        return view('produits', compact('produits', 'motcle'));
+    }
+
+    public function destroy($id)
+    {
+        $produit = Product::findOrFail($id);
+        $produit->delete();
+
+        return redirect()->route('produits.lecture')->with('success', 'Produit supprimé avec succès !');
+    }
 }
