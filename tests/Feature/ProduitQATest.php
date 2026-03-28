@@ -5,9 +5,12 @@ namespace Tests\Feature;
 use App\Models\Category;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use App\Models\Product;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProduitQATest extends TestCase
 {
+    use RefreshDatabase;
     /**
      * Utilisation de DatabaseTransactions :
      * Toutes les modifications faites dans ce fichier de test
