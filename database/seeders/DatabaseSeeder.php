@@ -5,15 +5,20 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 
+
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+      
 
+User::firstOrCreate(
+    ['email' => 'test@example.com'],
+    [
+        'name' => 'Test User',
+        'password' => bcrypt('password'),
+    ]
+);
         $this->call([
             CategorySeeder::class,
             ProductSeeder::class,

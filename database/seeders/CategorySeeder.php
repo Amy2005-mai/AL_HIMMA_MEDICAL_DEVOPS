@@ -10,12 +10,12 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         Category::create([
-            'name' => 'Médicaments',
+            'nom' => 'Médicaments',
             'description' => 'Produits pharmaceutiques'
         ]);
 
         Category::create([
-            'name' => 'Matériel médical',
+            'nom' => 'Matériel médical',
             'description' => 'Équipements médicaux'
         ]);
     }
