@@ -20,3 +20,6 @@ Route::post('/panier/ajouter/{id}', [\App\Http\Controllers\CartController::class
 Route::post('/panier/retirer/{id}', [\App\Http\Controllers\CartController::class, 'remove'])->name('retraitPanier');
 Route::get('/panier', [\App\Http\Controllers\CartController::class, 'index'])->name('checkout');
 Route::post('/panier/commander', [\App\Http\Controllers\CartController::class, 'checkout'])->name('commander');
+
+Route::get('/produits', [ProduitController::class, 'lecture'])->name('produits.lecture');
+Route::post('/save', [ProduitController::class, 'store'])->name('produits.save');
