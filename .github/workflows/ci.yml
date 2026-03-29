@@ -1,57 +1,67 @@
-name: Laravel CI
+name: Laravel CI - Full Build
 
 on:
   push:
     branches:
-      - dev
       - main
-      - feature/devops
+      - dev
+      - feature/*
   pull_request:
 
 jobs:
   laravel-tests:
     runs-on: ubuntu-latest
 
+    env:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+      APP_ENV: testing
+      APP_KEY: base64:SomeRandomKeyHere1234567890==
+      APP_DEBUG: true
+      APP_URL: http://localhost
+
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-        extensions: mbstring, bcmath, pdo_sqlite
+      # PHP et extensions nécessaires
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, pdo_sqlite, fileinfo
+          ini-values: post_max_size=256M, max_execution_time=300
 
-    - name: Install Composer dependencies
-      run: composer install --prefer-dist --no-progress --no-interaction
+      # Composer
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --no-suggest
 
-    - name: Dump autoload
-      run: composer dump-autoload
+      # Node.js + Vite
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
-    - name: Copy .env
-      run: cp .env.example .env
+      - name: Install NPM dependencies
+        run: npm ci
 
-    - name: Generate app key
-      run: php artisan key:generate
+      - name: Build assets for production
+        run: npm run build
 
-    - name: Create SQLite database
-      run: |
-        mkdir -p database
-        touch database/database.sqlite
+      # Créer storage et config cache pour Laravel
+      - name: Prepare Laravel
+        run: |
+          php artisan config:clear
+          php artisan cache:clear
+          php artisan view:clear
+          php artisan route:clear
+          mkdir -p storage/framework/testing
+          chmod -R 777 storage
 
-    - name: Run migrations
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
-      run: php artisan migrate --force
+      # Lancer les migrations SQLite
+      - name: Run migrations
+        run: php artisan migrate --force
 
-    - name: Cache Composer dependencies
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-
-    - name: Run tests
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
-      run: php artisan test 
+      # Lancer les tests
+      - name: Run PHPUnit tests
+        run: php artisan test --env=testing --no-tty --colors
