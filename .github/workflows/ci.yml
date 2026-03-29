@@ -70,4 +70,4 @@ jobs:
 
       # Lancer les tests PHPUnit
       - name: Run PHPUnit tests
-        run: php artisan test --env=testing --no-tty --colors
+        run: php artisan test --env=testing  --colors
