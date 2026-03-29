@@ -20,11 +20,9 @@ jobs:
       APP_URL: http://localhost
 
     steps:
-      # 1️⃣ Récupérer le code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Installer PHP et extensions
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -32,11 +30,9 @@ jobs:
           extensions: mbstring, bcmath, pdo_sqlite, fileinfo
           ini-values: post_max_size=256M, max_execution_time=300
 
-      # 3️⃣ Installer Composer
       - name: Install Composer dependencies
         run: composer install --no-progress --prefer-dist --no-suggest
 
-      # 4️⃣ Installer Node.js et dépendances
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -48,18 +44,21 @@ jobs:
       - name: Build assets for production
         run: npm run build
 
-      # 5️⃣ Créer le fichier SQLite avec chemin absolu
+      # Créer la base SQLite avant de toucher Laravel
       - name: Create SQLite database file
         run: |
           mkdir -p $GITHUB_WORKSPACE/database
           touch $GITHUB_WORKSPACE/database/testing.sqlite
         shell: bash
 
-      # 6️⃣ Définir DB_DATABASE absolu pour toutes les étapes Laravel
       - name: Set DB_DATABASE env
         run: echo "DB_DATABASE=$GITHUB_WORKSPACE/database/testing.sqlite" >> $GITHUB_ENV
 
-      # 7️⃣ Préparer Laravel (vider caches)
+      # Lancer les migrations **avant** de clear le cache
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      # Préparer Laravel (vider caches) **après migrations**
       - name: Prepare Laravel
         run: |
           php artisan config:clear
@@ -69,10 +68,6 @@ jobs:
           mkdir -p storage/framework/testing
           chmod -R 777 storage
 
-      # 8️⃣ Lancer les migrations
-      - name: Run migrations
-        run: php artisan migrate --force
-
-      # 9️⃣ Lancer les tests PHPUnit
+      # Lancer les tests PHPUnit
       - name: Run PHPUnit tests
         run: php artisan test --env=testing --no-tty --colors
