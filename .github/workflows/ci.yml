@@ -14,8 +14,9 @@ jobs:
 
     env:
       DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
       APP_ENV: testing
-      APP_KEY: base64:SomeRandomKeyHere1234567890==
+      APP_KEY: base64:4pL5eFqVtZ0w6zP+E1FvG8sX9aHkQnO+V3ZrR1x2yJ0=  # clé valide pour Laravel
       APP_DEBUG: true
       APP_URL: http://localhost
 
@@ -41,24 +42,9 @@ jobs:
       - name: Install NPM dependencies
         run: npm ci
 
-      - name: Build assets for production
+      - name: Build assets
         run: npm run build
 
-      # Créer la base SQLite avant de toucher Laravel
-      - name: Create SQLite database file
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/database
-          touch $GITHUB_WORKSPACE/database/testing.sqlite
-        shell: bash
-
-      - name: Set DB_DATABASE env
-        run: echo "DB_DATABASE=$GITHUB_WORKSPACE/database/testing.sqlite" >> $GITHUB_ENV
-
-      # Lancer les migrations **avant** de clear le cache
-      - name: Run migrations
-        run: php artisan migrate --force
-
-      # Préparer Laravel (vider caches) **après migrations**
       - name: Prepare Laravel
         run: |
           php artisan config:clear
@@ -68,6 +54,8 @@ jobs:
           mkdir -p storage/framework/testing
           chmod -R 777 storage
 
-      # Lancer les tests PHPUnit
-      - name: Run PHPUnit tests
-        run: php artisan test --env=testing  --colors
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      - name: Run tests
+        run: php artisan test --env=testing --colors
