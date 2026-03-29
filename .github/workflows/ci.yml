@@ -24,11 +24,9 @@ jobs:
       QUEUE_CONNECTION: sync
 
     steps:
-      # 1️⃣ Récupérer le code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Installer PHP et extensions
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -36,11 +34,9 @@ jobs:
           extensions: mbstring, bcmath, pdo_sqlite, fileinfo
           ini-values: post_max_size=256M, max_execution_time=300
 
-      # 3️⃣ Installer les dépendances Composer
       - name: Install Composer dependencies
         run: composer install --no-progress --prefer-dist --no-suggest
 
-      # 4️⃣ Installer Node + Vite
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -52,24 +48,16 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
-      # 5️⃣ Créer les dossiers nécessaires et préparer Laravel
-      - name: Prepare Laravel
-        run: |
-          mkdir -p storage/framework/testing
-          chmod -R 777 storage
+      - name: Prepare Laravel storage
+        run: mkdir -p storage/framework/testing
 
-      # 6️⃣ Lancer les migrations AVANT tout clear
       - name: Run migrations
         run: php artisan migrate --force
 
-      # 7️⃣ Clear caches (après migrations pour éviter les erreurs SQLite)
-      - name: Clear caches
+      - name: Clear caches safely (après migrations)
         run: |
-          php artisan config:clear
-          php artisan cache:clear
           php artisan view:clear
           php artisan route:clear
 
-      # 8️⃣ Lancer les tests
       - name: Run PHPUnit tests
         run: php artisan test --env=testing --colors
